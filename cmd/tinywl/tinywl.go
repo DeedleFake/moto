@@ -10,8 +10,9 @@ import (
 )
 
 type server struct {
-	display *moto.Display
-	backend moto.Backend
+	display  *moto.Display
+	backend  *moto.Backend
+	renderer *moto.Renderer
 }
 
 func (s *server) init() {
@@ -29,13 +30,13 @@ func (s *server) init() {
 	}
 	s.backend = backend
 
-	//renderer, err := moto.AutocreateRenderer(s.backend)
-	//if err != nil {
-	//	slog.Error("create renderer", err)
-	//	os.Exit(1)
-	//}
-	//s.renderer = renderer
-	//s.renderer.InitDisplay(s.display)
+	renderer, err := moto.AutocreateRenderer(s.backend)
+	if err != nil {
+		slog.Error("create renderer", err)
+		os.Exit(1)
+	}
+	s.renderer = renderer
+	s.renderer.InitDisplay(s.display)
 
 	//s.CreateCompositor(s.display, s.renderer)
 	//moto.NewDataDeviceManager(s.display)

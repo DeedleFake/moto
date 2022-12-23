@@ -7,20 +7,30 @@ import (
 	"deedles.dev/wl/wire"
 )
 
-type Backend interface {
+type Backend struct {
+	impl     BackendImpl
+	listener backendListener
 }
 
-func AutocreateBackend(display *Display) (Backend, error) {
+type BackendImpl interface {
+	Start() error
+	Destroy()
+	Session() *Session
+	PresentationClock() *Clock
+	DRM() *os.File
+	BufferCaps() uint32
+}
+
+type backendListener interface {
+	Destroy()
+	NewInput()
+	NewOutput()
+}
+
+func AutocreateBackend(display *Display) (*Backend, error) {
 	display.AddGlobal(wl.ShmInterface, wl.ShmVersion, func(state wire.State, id wire.NewID) {
 		shm := wl.BindShm(state, id)
 		shm.Listener = &shmListener{
-			display: display,
-		}
-	})
-
-	display.AddGlobal(wl.CompositorInterface, wl.CompositorVersion, func(state wire.State, id wire.NewID) {
-		c := wl.BindCompositor(state, id)
-		c.Listener = &compositorListener{
 			display: display,
 		}
 	})
@@ -36,14 +46,10 @@ func (lis *shmListener) CreatePool(pool *wl.ShmPool, file *os.File, size int32) 
 	// TODO
 }
 
-type compositorListener struct {
-	display *Display
-}
-
-func (lis *compositorListener) CreateSurface(s *wl.Surface) {
+type Session struct {
 	// TODO
 }
 
-func (lis *compositorListener) CreateRegion(r *wl.Region) {
+type Clock struct {
 	// TODO
 }
