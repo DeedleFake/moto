@@ -38,7 +38,7 @@ func (s *server) init() {
 	s.renderer = renderer
 	s.renderer.InitDisplay(s.display)
 
-	//s.CreateCompositor(s.display, s.renderer)
+	moto.CreateCompositor(s.display, s.renderer)
 	//moto.NewDataDeviceManager(s.display)
 
 	//s.outputLayout = s.CreateOutputLayout()
