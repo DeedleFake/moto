@@ -11,6 +11,7 @@ import (
 
 type server struct {
 	display *moto.Display
+	backend moto.Backend
 }
 
 func (s *server) init() {
@@ -21,12 +22,12 @@ func (s *server) init() {
 	}
 	s.display = display
 
-	//backend, err := moto.AutocreateBackend(s.display)
-	//if err != nil {
-	//	slog.Error("create backend", err)
-	//	os.Exit(1)
-	//}
-	//s.backend = backend
+	backend, err := moto.AutocreateBackend(s.display)
+	if err != nil {
+		slog.Error("create backend", err)
+		os.Exit(1)
+	}
+	s.backend = backend
 
 	//renderer, err := moto.AutocreateRenderer(s.backend)
 	//if err != nil {
@@ -36,14 +37,13 @@ func (s *server) init() {
 	//s.renderer = renderer
 	//s.renderer.InitDisplay(s.display)
 
-	//moto.NewCompositor(s.display, s.renderer)
+	//s.CreateCompositor(s.display, s.renderer)
 	//moto.NewDataDeviceManager(s.display)
 
-	//s.outputLayout = moto.NewOutputLayout()
-
+	//s.outputLayout = s.CreateOutputLayout()
 	//s.backend.NewOutput = s.onNewOutput
 
-	//s.scene = moto.NewScene()
+	//s.scene = moto.CreateScene()
 	//s.scene.AttachOutputLayout(s.outputLayout)
 }
 

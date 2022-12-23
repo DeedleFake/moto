@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"deedles.dev/moto/internal/set"
 	wl "deedles.dev/wl/server"
+	"deedles.dev/wl/wire"
 	"deedles.dev/xsync"
 	"golang.org/x/exp/slog"
 )
@@ -16,10 +18,17 @@ type Display struct {
 	server *wl.Server
 	queue  xsync.Queue[func()]
 	serial uint32
+
+	reg     set.Set[*wl.Registry]
+	name    uint32
+	globals map[uint32]global
 }
 
 func NewDisplay() (*Display, error) {
-	var d Display
+	d := Display{
+		reg:     make(set.Set[*wl.Registry]),
+		globals: make(map[uint32]global),
+	}
 
 	server, err := wl.CreateServer()
 	if err != nil {
@@ -104,6 +113,47 @@ func (d *Display) Run(ctx context.Context) {
 	}
 }
 
+func (d *Display) addRegistry(reg *wl.Registry) {
+	d.reg.Add(reg)
+	for name, g := range d.globals {
+		reg.Global(name, g.Interface, g.Version)
+	}
+}
+
+func (d *Display) removeRegistry(reg *wl.Registry) {
+	delete(d.reg, reg)
+}
+
+func (d *Display) AddGlobal(inter string, version uint32, create func(state wire.State, id wire.NewID)) (name uint32) {
+	name = d.name
+	d.name++
+
+	d.globals[name] = global{
+		Interface: inter,
+		Version:   version,
+		Create:    create,
+	}
+
+	for reg := range d.reg {
+		reg.Global(name, inter, version)
+	}
+
+	return name
+}
+
+func (d *Display) RemoveGlobal(name uint32) {
+	delete(d.globals, name)
+	for reg := range d.reg {
+		reg.GlobalRemove(name)
+	}
+}
+
+type global struct {
+	Interface string
+	Version   uint32
+	Create    func(state wire.State, id wire.NewID)
+}
+
 type displayListener struct {
 	display *Display
 	client  *wl.Client
@@ -113,6 +163,29 @@ func (lis *displayListener) Sync(cb *wl.Callback) {
 	cb.Done(lis.display.NextSerial())
 }
 
-func (lis *displayListener) GetRegistry(r *wl.Registry) {
-	// TODO
+func (lis *displayListener) GetRegistry(reg *wl.Registry) {
+	lis.display.addRegistry(reg)
+
+	reg.OnDelete = func() { lis.display.removeRegistry(reg) }
+	reg.Listener = &registryListener{
+		display: lis.display,
+		client:  lis.client,
+	}
+}
+
+type registryListener struct {
+	display *Display
+	client  *wl.Client
+}
+
+func (lis *registryListener) Bind(name uint32, id wire.NewID) {
+	g, ok := lis.display.globals[name]
+	if !ok {
+		panic("Not implemented.")
+	}
+	if (g.Interface != id.Interface) || (g.Version != id.Version) {
+		panic("Not implemented.")
+	}
+
+	g.Create(lis.client, id)
 }
