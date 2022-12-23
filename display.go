@@ -3,12 +3,12 @@ package moto
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"deedles.dev/moto/internal/set"
 	wl "deedles.dev/wl/server"
 	"deedles.dev/wl/wire"
 	"deedles.dev/xsync"
-	"golang.org/x/exp/slog"
 )
 
 // Display is a Wayland display for clients to connect to. It handles
@@ -59,6 +59,9 @@ func (d *Display) NextSerial() uint32 {
 }
 
 func (d *Display) client(ctx context.Context, client *wl.Client) {
+	log.Printf("client connected: %p", client)
+	defer log.Printf("client disconnected: %p", client)
+
 	// TODO: Can this deadlock?
 	defer func() { d.queue.Add() <- func() { client.DeleteAll() } }()
 
@@ -83,7 +86,7 @@ func (d *Display) client(ctx context.Context, client *wl.Client) {
 			case d.queue.Add() <- func() {
 				err := ev()
 				if err != nil {
-					slog.Error("client %p event", err, client)
+					log.Printf("error in client %p event: %v", client, err)
 				}
 			}:
 			}

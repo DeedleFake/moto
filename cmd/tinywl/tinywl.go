@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 
 	"deedles.dev/moto"
-	"golang.org/x/exp/slog"
 )
 
 type server struct {
@@ -18,22 +18,19 @@ type server struct {
 func (s *server) init() {
 	display, err := moto.NewDisplay()
 	if err != nil {
-		slog.Error("new display", err)
-		os.Exit(1)
+		log.Fatalf("new display: %v", err)
 	}
 	s.display = display
 
 	backend, err := moto.AutocreateBackend(s.display)
 	if err != nil {
-		slog.Error("create backend", err)
-		os.Exit(1)
+		log.Fatalf("create backend: %v", err)
 	}
 	s.backend = backend
 
 	renderer, err := moto.AutocreateRenderer(s.backend)
 	if err != nil {
-		slog.Error("create renderer", err)
-		os.Exit(1)
+		log.Fatalf("create renderer: %v", err)
 	}
 	s.renderer = renderer
 	s.renderer.InitDisplay(s.display)
