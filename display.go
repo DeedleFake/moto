@@ -186,9 +186,6 @@ func (lis *registryListener) Bind(name uint32, id wire.NewID) {
 	if !ok {
 		panic("Not implemented.")
 	}
-	if (g.Interface != id.Interface) || (g.Version != id.Version) {
-		panic("Not implemented.")
-	}
 
 	g.Create(lis.client, id)
 }

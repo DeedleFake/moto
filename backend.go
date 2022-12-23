@@ -17,6 +17,14 @@ func AutocreateBackend(display *Display) (Backend, error) {
 			display: display,
 		}
 	})
+
+	display.AddGlobal(wl.CompositorInterface, wl.CompositorVersion, func(state wire.State, id wire.NewID) {
+		c := wl.BindCompositor(state, id)
+		c.Listener = &compositorListener{
+			display: display,
+		}
+	})
+
 	return nil, nil
 }
 
@@ -25,5 +33,17 @@ type shmListener struct {
 }
 
 func (lis *shmListener) CreatePool(pool *wl.ShmPool, file *os.File, size int32) {
+	// TODO
+}
+
+type compositorListener struct {
+	display *Display
+}
+
+func (lis *compositorListener) CreateSurface(s *wl.Surface) {
+	// TODO
+}
+
+func (lis *compositorListener) CreateRegion(r *wl.Region) {
 	// TODO
 }
