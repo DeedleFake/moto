@@ -59,6 +59,9 @@ func (d *Display) NextSerial() uint32 {
 }
 
 func (d *Display) client(ctx context.Context, client *wl.Client) {
+	// TODO: Can this deadlock?
+	defer func() { d.queue.Add() <- func() { client.DeleteAll() } }()
+
 	client.Display().Listener = &displayListener{
 		display: d,
 		client:  client,
