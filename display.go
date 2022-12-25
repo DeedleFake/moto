@@ -40,11 +40,6 @@ func NewDisplay() (*Display, error) {
 	return &d, nil
 }
 
-func (d *Display) Close() error {
-	d.queue.Stop()
-	return nil
-}
-
 // Serial returns the current event serial.
 func (d *Display) Serial() uint32 {
 	return d.serial
