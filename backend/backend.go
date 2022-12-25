@@ -5,8 +5,19 @@ import (
 	"image/color"
 	"os"
 
+	"golang.org/x/exp/maps"
 	"golang.org/x/image/math/f32"
 )
+
+var backends map[string]Backend
+
+func Register(name string, backend Backend) {
+	backends[name] = backend
+}
+
+func Names() []string {
+	return maps.Keys(backends)
+}
 
 type Backend interface {
 	Start() error
