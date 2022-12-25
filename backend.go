@@ -3,22 +3,14 @@ package moto
 import (
 	"os"
 
+	"deedles.dev/moto/backend"
 	wl "deedles.dev/wl/server"
 	"deedles.dev/wl/wire"
 )
 
 type Backend struct {
-	impl     BackendImpl
+	impl     backend.Backend
 	listener backendListener
-}
-
-type BackendImpl interface {
-	Start() error
-	Destroy()
-	Session() *Session
-	PresentationClock() *Clock
-	DRM() *os.File
-	BufferCaps() uint32
 }
 
 type backendListener interface {
@@ -43,13 +35,5 @@ type shmListener struct {
 }
 
 func (lis *shmListener) CreatePool(pool *wl.ShmPool, file *os.File, size int32) {
-	// TODO
-}
-
-type Session struct {
-	// TODO
-}
-
-type Clock struct {
 	// TODO
 }
