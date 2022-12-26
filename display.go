@@ -58,7 +58,7 @@ func (d *Display) client(ctx context.Context, client *wl.Client) {
 	defer log.Printf("client disconnected: %p", client)
 
 	// TODO: Can this deadlock?
-	defer func() { d.queue.Add() <- func() { client.DeleteAll() } }()
+	defer func() { d.queue.Push() <- func() { client.DeleteAll() } }()
 
 	client.Display().Listener = &displayListener{
 		display: d,
@@ -78,7 +78,7 @@ func (d *Display) client(ctx context.Context, client *wl.Client) {
 			select {
 			case <-ctx.Done():
 				return
-			case d.queue.Add() <- func() {
+			case d.queue.Push() <- func() {
 				err := ev()
 				if err != nil {
 					log.Printf("error in client %p event: %v", client, err)
@@ -104,7 +104,7 @@ func (d *Display) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
-		case ev, ok := <-d.queue.Get():
+		case ev, ok := <-d.queue.Pop():
 			if !ok {
 				return
 			}
